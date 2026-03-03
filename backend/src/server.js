@@ -16,8 +16,18 @@ dotenv.config();
 
 const app = express();
 
+// CORS configuration — allow Vercel frontend in production
+const corsOptions = {
+  origin: process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
+    : '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Routes
