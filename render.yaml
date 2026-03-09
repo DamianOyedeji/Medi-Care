@@ -61,7 +61,6 @@ services:
   - type: web
     name: medi-care-frontend
     runtime: static
-    region: eu-west-1
     plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: dist
