@@ -1,0 +1,82 @@
+# Render Blueprint – Medi-Care
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  # ── Backend API (Node.js Web Service) ──
+  - type: web
+    name: medi-care-backend
+    runtime: node
+    region: eu-west-1          # London – closest to UK users
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: HOST
+        value: 0.0.0.0
+      - key: CORS_ORIGINS
+        value: https://medi-care-frontend.onrender.com
+      - key: CLIENT_URL
+        value: https://medi-care-frontend.onrender.com
+      # ── Secrets (set manually in Render dashboard) ──
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: CRISIS_EMAIL_RECIPIENTS
+        sync: false
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: CRISIS_RATE_LIMIT_MAX
+        value: 5
+      - key: LOG_LEVEL
+        value: info
+
+  # ── Frontend (Vite Static Site) ──
+  - type: web
+    name: medi-care-frontend
+    runtime: static
+    region: eu-west-1
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://medi-care-backend.onrender.com
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
