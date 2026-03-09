@@ -6,7 +6,7 @@ services:
   - type: web
     name: medi-care-backend
     runtime: node
-    region: eu-west-1          # London – closest to UK users
+    region: frankfurt          # Closest to UK users
     plan: free
     rootDir: backend
     buildCommand: npm install
@@ -61,7 +61,6 @@ services:
   - type: web
     name: medi-care-frontend
     runtime: static
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     headers:
