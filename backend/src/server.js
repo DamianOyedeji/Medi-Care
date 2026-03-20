@@ -17,17 +17,55 @@ dotenv.config();
 const app = express();
 
 // CORS configuration — allow Render frontend in production
+const defaultAllowedOrigins = [
+  'https://medi-care-frontend.onrender.com',
+  'https://medi-care-frontend-3q4c.onrender.com',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
+
+const normalizeOrigin = (value) => {
+  if (!value) return null;
+
+  try {
+    return new URL(value).origin;
+  } catch {
+    return value.replace(/\/+$/, '').trim();
+  }
+};
+
+const envOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((origin) => normalizeOrigin(origin.trim())).filter(Boolean)
+  : [];
+
+const allowedOrigins = Array.from(
+  new Set([
+    ...defaultAllowedOrigins.map((origin) => normalizeOrigin(origin)).filter(Boolean),
+    ...envOrigins,
+  ])
+);
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
-    : '*',
+  origin: (origin, callback) => {
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(normalizeOrigin(origin))) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200,
 };
 
 // Middleware
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 // Routes

@@ -20,9 +20,9 @@ services:
       - key: HOST
         value: 0.0.0.0
       - key: CORS_ORIGINS
-        value: https://medi-care-frontend.onrender.com
+        value: https://medi-care-frontend-3q4c.onrender.com
       - key: CLIENT_URL
-        value: https://medi-care-frontend.onrender.com
+        value: https://medi-care-frontend-3q4c.onrender.com
       # ── Secrets (set manually in Render dashboard) ──
       - key: SUPABASE_URL
         sync: false
