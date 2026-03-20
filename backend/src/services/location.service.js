@@ -211,7 +211,7 @@ const KNOWN_NIGERIAN_PSYCHIATRIC = [
 // Curated list of major Nigerian teaching & specialist hospitals
 // These are always merged into results when the user is within range
 const KNOWN_NIGERIAN_HOSPITALS = [
-  { name: 'Babcock University Teaching Hospital (BUTH)', latitude: 6.8970, longitude: 3.7140, phone: '+234-8035-067-509', address: 'Babcock University, Ilishan-Remo, Ogun State', category: 'hospital', website: null },
+  { name: 'Babcock University Teaching Hospital (BUTH)', latitude: 6.8970, longitude: 3.7140, phone: '0812 788 5981 / 0905 821 9781 / 0806 826 5322', address: 'Babcock University, Ilishan-Remo, Ogun State', category: 'hospital', website: null },
   { name: 'Lagos University Teaching Hospital (LUTH)', latitude: 6.5177, longitude: 3.3541, phone: '+234-1-7600190', address: 'Idi-Araba, Lagos', category: 'hospital', website: null },
   { name: 'University College Hospital (UCH), Ibadan', latitude: 7.4019, longitude: 3.9057, phone: '+234-2-2411763', address: 'Queen Elizabeth Rd, Ibadan, Oyo State', category: 'hospital', website: null },
   { name: 'National Hospital Abuja', latitude: 9.0134, longitude: 7.4918, phone: '+234-9-5239242', address: 'Plot 132, Central District, Abuja', category: 'hospital', website: null },
