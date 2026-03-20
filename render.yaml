@@ -59,7 +59,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://medi-care-backend.onrender.com
+        value: https://medi-care-backend-p4po.onrender.com
       - key: VITE_SUPABASE_URL
         sync: false
       - key: VITE_SUPABASE_ANON_KEY

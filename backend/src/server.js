@@ -20,6 +20,7 @@ const app = express();
 const defaultAllowedOrigins = [
   'https://medi-care-frontend.onrender.com',
   'https://medi-care-frontend-3q4c.onrender.com',
+  'https://medi-care-frontend-p4po.onrender.com',
   'http://localhost:5173',
   'http://localhost:3000',
 ];
