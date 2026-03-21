@@ -9,7 +9,26 @@ export const getConversations = asyncHandler(async (req, res) => {
 
 export const createConversation = asyncHandler(async (req, res) => {
   const { title } = req.body;
-  const { data } = await supabaseAdmin.from('conversations').insert({ user_id: req.userId, title: title || 'New Conversation', last_message_at: new Date().toISOString() }).select().single();
+
+  // Ensure user exists in public.users (foreign key target)
+  const { error: upsertErr } = await supabaseAdmin.from('users').upsert({
+    id: req.userId,
+    email: req.user?.email || '',
+    full_name: req.user?.user_metadata?.full_name || null,
+    is_active: true,
+  }, { onConflict: 'id', ignoreDuplicates: true });
+
+  if (upsertErr) {
+    logger.warn('User upsert failed before conversation creation', { userId: req.userId, error: upsertErr.message });
+  }
+
+  const { data, error } = await supabaseAdmin.from('conversations').insert({ user_id: req.userId, title: title || 'New Conversation', last_message_at: new Date().toISOString() }).select().single();
+
+  if (error || !data) {
+    logger.error('Failed to create conversation', { userId: req.userId, error: error?.message });
+    return res.status(500).json({ error: 'Server Error', message: 'Failed to create conversation' });
+  }
+
   logger.info('Conversation created', { userId: req.userId, conversationId: data.id });
   res.status(201).json({ conversation: data });
 });
