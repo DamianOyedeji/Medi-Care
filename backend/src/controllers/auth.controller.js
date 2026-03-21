@@ -77,16 +77,16 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 export const getProfile = asyncHandler(async (req, res) => {
-  const { data: user, error } = await supabase.from('users').select('id, email, full_name, created_at, last_login_at, is_active').eq('id', req.userId).single();
+  const { data: user, error } = await supabaseAdmin.from('users').select('id, email, full_name, created_at, last_login_at, is_active').eq('id', req.userId).single();
   if (error) throw error;
 
-  const { data: settings } = await supabase.from('user_settings').select('*').eq('user_id', req.userId).single();
+  const { data: settings } = await supabaseAdmin.from('user_settings').select('*').eq('user_id', req.userId).single();
   res.json({ user: { ...user, settings: settings || {} } });
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
   const { fullName } = req.body;
-  const { data, error } = await supabase.from('users').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', req.userId).select().single();
+  const { data, error } = await supabaseAdmin.from('users').update({ full_name: fullName, updated_at: new Date().toISOString() }).eq('id', req.userId).select().single();
   if (error) throw error;
 
   await supabase.auth.updateUser({ data: { full_name: fullName } });
@@ -134,7 +134,7 @@ export const deleteAccount = asyncHandler(async (req, res) => {
   const { error: signInError } = await supabase.auth.signInWithPassword({ email: user.user.email, password: password });
   if (signInError) return res.status(401).json({ error: 'Authentication Failed', message: 'Incorrect password' });
 
-  const { error } = await supabase.from('users').update({ is_active: false, updated_at: new Date().toISOString() }).eq('id', req.userId);
+  const { error } = await supabaseAdmin.from('users').update({ is_active: false, updated_at: new Date().toISOString() }).eq('id', req.userId);
   if (error) throw error;
 
   await supabase.auth.signOut();

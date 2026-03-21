@@ -17,7 +17,7 @@ export const createMoodEntry = asyncHandler(async (req, res) => {
 
 export const getMoodEntries = asyncHandler(async (req, res) => {
   const { limit = 30, days } = req.query;
-  let query = supabase.from('mood_entries').select('*').eq('user_id', req.userId).order('created_at', { ascending: false });
+  let query = supabaseAdmin.from('mood_entries').select('*').eq('user_id', req.userId).order('created_at', { ascending: false });
   if (days) {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - parseInt(days));
@@ -32,7 +32,7 @@ export const getMoodStats = asyncHandler(async (req, res) => {
   const { days = 30 } = req.query;
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - parseInt(days));
-  const { data } = await supabase.from('mood_entries').select('*').eq('user_id', req.userId).gte('created_at', startDate.toISOString()).order('created_at', { ascending: true });
+  const { data } = await supabaseAdmin.from('mood_entries').select('*').eq('user_id', req.userId).gte('created_at', startDate.toISOString()).order('created_at', { ascending: true });
 
   if (!data || data.length === 0) {
     return res.json({ stats: { averageIntensity: 0, totalEntries: 0, moodDistribution: { excellent: 0, good: 0, neutral: 0, low: 0, poor: 0 }, trend: 'stable' } });
@@ -58,7 +58,7 @@ export const getMoodTrend = asyncHandler(async (req, res) => {
   const { days = 7 } = req.query;
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - parseInt(days));
-  const { data } = await supabase.from('mood_entries').select('*').eq('user_id', req.userId).gte('created_at', startDate.toISOString()).order('created_at', { ascending: true });
+  const { data } = await supabaseAdmin.from('mood_entries').select('*').eq('user_id', req.userId).gte('created_at', startDate.toISOString()).order('created_at', { ascending: true });
 
   const trendData = (data || []).reduce((acc, entry) => {
     const date = new Date(entry.created_at).toISOString().split('T')[0];
@@ -75,7 +75,7 @@ export const getMoodTrend = asyncHandler(async (req, res) => {
 
 export const deleteMoodEntry = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  await supabase.from('mood_entries').delete().eq('id', id).eq('user_id', req.userId);
+  await supabaseAdmin.from('mood_entries').delete().eq('id', id).eq('user_id', req.userId);
   res.json({ message: 'Mood entry deleted successfully' });
 });
 

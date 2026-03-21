@@ -1,10 +1,10 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase.js';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { findNearbyResources, geocodeAddress } from '../services/location.service.js';
 import { getSupportResources } from '../services/safety.service.js';
 
 export const getDailyQuote = asyncHandler(async (req, res) => {
-  const { data } = await supabase.from('daily_quotes').select('*').eq('is_active', true).order('created_at', { ascending: false });
+  const { data } = await supabaseAdmin.from('daily_quotes').select('*').eq('is_active', true).order('created_at', { ascending: false });
   if (!data || data.length === 0) return res.json({ quote: 'You are stronger than you think.', author: 'Unknown' });
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
@@ -21,7 +21,7 @@ export const getNearbyResources = asyncHandler(async (req, res) => {
 });
 
 export const getHelplines = asyncHandler(async (req, res) => {
-  const { data } = await supabase.from('support_resources').select('*').eq('type', 'helpline').eq('is_24_7', true);
+  const { data } = await supabaseAdmin.from('support_resources').select('*').eq('type', 'helpline').eq('is_24_7', true);
   res.json({ helplines: data || [] });
 });
 

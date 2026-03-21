@@ -17,7 +17,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: 'Validation Error', message: 'Conversation ID is required' });
   }
 
-  const { data: conversation, error: convError } = await supabase.from('conversations').select('*').eq('id', conversationId).eq('user_id', userId).single();
+  const { data: conversation, error: convError } = await supabaseAdmin.from('conversations').select('*').eq('id', conversationId).eq('user_id', userId).single();
   if (convError || !conversation) {
     return res.status(404).json({ error: 'Not Found', message: 'Conversation not found' });
   }
@@ -61,7 +61,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     if (crisisError) logger.error('Failed to log crisis event', { error: crisisError.message });
 
     try {
-      const { data: userData } = await supabase.from('users').select('email, full_name').eq('id', userId).single();
+      const { data: userData } = await supabaseAdmin.from('users').select('email, full_name').eq('id', userId).single();
 
       const emailResult = await sendCrisisAlert({
         userId, userName: userData?.full_name, userEmail: userData?.email, riskLevel, riskScore: score,
@@ -94,7 +94,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
     });
 
   } else {
-    const { data: history } = await supabase.from('messages').select('role, content').eq('conversation_id', conversationId).order('created_at', { ascending: true }).limit(10);
+    const { data: history } = await supabaseAdmin.from('messages').select('role, content').eq('conversation_id', conversationId).order('created_at', { ascending: true }).limit(10);
 
     aiResponse = await generateAIResponse(message, history || []);
 
@@ -121,19 +121,19 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
 export const getConversationHistory = asyncHandler(async (req, res) => {
   const { conversationId } = req.params;
-  const { data: conversation } = await supabase.from('conversations').select('*').eq('id', conversationId).eq('user_id', req.userId).single();
+  const { data: conversation } = await supabaseAdmin.from('conversations').select('*').eq('id', conversationId).eq('user_id', req.userId).single();
   if (!conversation) return res.status(404).json({ error: 'Not Found', message: 'Conversation not found' });
 
-  const { data: messages } = await supabase.from('messages').select('*').eq('conversation_id', conversationId).order('created_at', { ascending: true });
+  const { data: messages } = await supabaseAdmin.from('messages').select('*').eq('conversation_id', conversationId).order('created_at', { ascending: true });
   res.json({ conversation, messages: messages || [] });
 });
 
 export const getConversationSummary = asyncHandler(async (req, res) => {
   const { conversationId } = req.params;
-  const { data: conversation } = await supabase.from('conversations').select('*').eq('id', conversationId).eq('user_id', req.userId).single();
+  const { data: conversation } = await supabaseAdmin.from('conversations').select('*').eq('id', conversationId).eq('user_id', req.userId).single();
   if (!conversation) return res.status(404).json({ error: 'Not Found', message: 'Conversation not found' });
 
-  const { data: messages } = await supabase.from('messages').select('role, risk_level').eq('conversation_id', conversationId);
+  const { data: messages } = await supabaseAdmin.from('messages').select('role, risk_level').eq('conversation_id', conversationId);
   const stats = {
     totalMessages: messages?.length || 0,
     userMessages: messages?.filter(m => m.role === 'user').length || 0,
