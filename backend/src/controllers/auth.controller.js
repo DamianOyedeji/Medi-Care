@@ -48,7 +48,14 @@ export const login = asyncHandler(async (req, res) => {
     return res.status(401).json({ error: 'Authentication Failed', message: 'Invalid email or password' });
   }
 
-  await supabaseAdmin.from('users').update({ last_login_at: new Date().toISOString() }).eq('id', data.user.id);
+  // Upsert into public.users so authenticate middleware always finds the row
+  await supabaseAdmin.from('users').upsert({
+    id: data.user.id,
+    email: data.user.email,
+    full_name: data.user.user_metadata?.full_name || null,
+    last_login_at: new Date().toISOString(),
+    is_active: true,
+  }, { onConflict: 'id' });
 
   logger.info('User logged in successfully', { userId: data.user.id, email });
   res.json({

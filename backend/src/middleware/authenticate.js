@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 import { logger } from '../config/logger.js';
 
 /**
@@ -33,12 +33,24 @@ export const authenticate = async (req, res, next) => {
       });
     }
 
-    // Check if user is active
-    const { data: userData, error: userError } = await supabase
+    // Check if user is active (auto-create row if missing after OAuth/signup)
+    let { data: userData, error: userError } = await supabase
       .from('users')
       .select('is_active')
       .eq('id', user.id)
       .single();
+
+    if (userError && userError.code === 'PGRST116') {
+      // Row doesn't exist yet — create it so user isn't locked out
+      await supabaseAdmin.from('users').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || null,
+        is_active: true,
+      }, { onConflict: 'id' });
+      userData = { is_active: true };
+      userError = null;
+    }
 
     if (userError || !userData?.is_active) {
       return res.status(403).json({
