@@ -34,7 +34,7 @@ export const authenticate = async (req, res, next) => {
     }
 
     // Check if user is active (auto-create row if missing after OAuth/signup)
-    let { data: userData, error: userError } = await supabase
+    let { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select('is_active')
       .eq('id', user.id)

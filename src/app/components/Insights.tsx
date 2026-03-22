@@ -29,16 +29,20 @@ export function Insights({ onBack, onContinueChat }: InsightsProps) {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [moodEntryCount, setMoodEntryCount] = useState(0);
+  const REQUIRED_ENTRIES = 3;
 
   useEffect(() => {
     async function fetchData() {
       try {
         const [trendRes, insightsRes] = await Promise.all([
           api.get<{ trend: Array<{ date: string; averageIntensity: number; dominantMood?: string }> }>('/api/mood/trend?days=7'),
-          api.get<{ insights: Array<{ id: string; title: string; content: string }> }>('/api/insights'),
+          api.get<{ insights: Array<{ id: string; title: string; content: string }>; moodEntryCount: number }>('/api/insights'),
         ]);
         const trend = (trendRes as { trend: Array<{ date: string; averageIntensity: number; dominantMood?: string }> }).trend || [];
-        const ins = (insightsRes as { insights: Array<{ id: string; title: string; content: string }> }).insights || [];
+        const ins = (insightsRes as { insights: Array<{ id: string; title: string; content: string }>; moodEntryCount: number }).insights || [];
+        const entryCount = (insightsRes as { moodEntryCount: number }).moodEntryCount || 0;
+        setMoodEntryCount(entryCount);
 
         const moodLabels: Record<string, string> = { excellent: 'Great', good: 'Good', neutral: 'Calm', low: 'Low', poor: 'Overwhelmed' };
         setMoodData(
@@ -49,6 +53,20 @@ export function Insights({ onBack, onContinueChat }: InsightsProps) {
           }))
         );
         setInsights(ins);
+
+        // Auto-generate insights if enough mood data but no insights yet
+        if (ins.length === 0 && entryCount >= REQUIRED_ENTRIES) {
+          try {
+            setGenerating(true);
+            const res = await api.post<{ insight: { id: string; title: string; content: string } }>('/api/insights/generate');
+            const newInsight = (res as { insight: { id: string; title: string; content: string } }).insight;
+            if (newInsight) setInsights([newInsight]);
+          } catch {
+            // Silently fail — user can still manually generate
+          } finally {
+            setGenerating(false);
+          }
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load insights');
         setMoodData([]);
@@ -105,12 +123,29 @@ export function Insights({ onBack, onContinueChat }: InsightsProps) {
         ) : !hasData ? (
           <div className="text-center py-12">
             <p className="text-stone-500 mb-4">No insights yet.</p>
-            <p className="text-stone-400 text-sm mb-6">
-              Track your mood in conversations and add at least 3 mood entries to generate insights.
-            </p>
-            <Button variant="primary" size="lg" onClick={onContinueChat}>
-              Continue Conversation
-            </Button>
+            {moodEntryCount < REQUIRED_ENTRIES ? (
+              <>
+                <p className="text-stone-400 text-sm mb-2">
+                  You need at least {REQUIRED_ENTRIES} mood entries to generate insights.
+                </p>
+                <p className="text-stone-400 text-sm mb-6">
+                  You currently have <span className="font-semibold text-stone-600">{moodEntryCount}</span> — just{' '}
+                  <span className="font-semibold text-teal-600">{REQUIRED_ENTRIES - moodEntryCount} more</span> to go!
+                </p>
+                <Button variant="primary" size="lg" onClick={onContinueChat}>
+                  Continue Conversation
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-stone-400 text-sm mb-6">
+                  You have {moodEntryCount} mood entries — enough to generate insights!
+                </p>
+                <Button variant="primary" size="lg" onClick={handleGenerateInsights} disabled={generating}>
+                  {generating ? 'Generating...' : 'Generate Insights'}
+                </Button>
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -166,18 +201,16 @@ export function Insights({ onBack, onContinueChat }: InsightsProps) {
               </motion.div>
             ))}
 
-            {moodData.length < 3 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={handleGenerateInsights}
-                  disabled={generating}
-                >
-                  {generating ? 'Generating...' : 'Generate Insights (needs 3+ mood entries)'}
-                </Button>
-              </motion.div>
-            )}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={handleGenerateInsights}
+                disabled={generating}
+              >
+                {generating ? 'Generating...' : 'Generate New Insights'}
+              </Button>
+            </motion.div>
 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="pt-4 text-center">
               <Button variant="primary" size="lg" onClick={onContinueChat} className="w-full sm:w-auto min-w-[200px] shadow-teal-200/50 shadow-lg">

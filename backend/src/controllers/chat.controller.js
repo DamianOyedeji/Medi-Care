@@ -34,6 +34,24 @@ export const sendMessage = asyncHandler(async (req, res) => {
   const emotionAnalysis = await analyzeEmotionWithRoBERTa(message);
   if (emotionAnalysis) {
     logger.info('Emotion analysis complete', { userId, conversationId, primaryEmotion: emotionAnalysis.primary, confidence: emotionAnalysis.confidence });
+
+    // Auto-create mood entry from emotion analysis
+    const emotionToMood = { joy: 'excellent', surprise: 'good', neutral: 'neutral', sadness: 'low', anger: 'poor', fear: 'poor', disgust: 'poor' };
+    const emotionToIntensity = { joy: 8, surprise: 6, neutral: 5, sadness: 3, anger: 2, fear: 2, disgust: 2 };
+    const detectedMood = emotionToMood[emotionAnalysis.primary] || 'neutral';
+    const detectedIntensity = emotionToIntensity[emotionAnalysis.primary] || 5;
+    try {
+      await supabaseAdmin.from('mood_entries').insert({
+        user_id: userId,
+        mood: detectedMood,
+        intensity: detectedIntensity,
+        notes: `Auto-detected: ${emotionAnalysis.primary} (confidence: ${emotionAnalysis.confidence})`,
+        conversation_id: conversationId
+      });
+      logger.info('Auto mood entry created from emotion analysis', { userId, mood: detectedMood, intensity: detectedIntensity });
+    } catch (moodErr) {
+      logger.warn('Failed to auto-create mood entry', { error: moodErr.message });
+    }
   }
 
   const { data: userMessage, error: userMsgError } = await supabaseAdmin.from('messages').insert({
