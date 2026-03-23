@@ -15,31 +15,31 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
       icon: <MessageCircle size={24} />,
       title: 'AI-Powered Chat',
       description: 'Have meaningful conversations with an AI companion that understands and supports you.',
-      iconClassName: 'bg-teal-50 text-teal-600',
+      iconClassName: 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400',
     },
     {
       icon: <Shield size={24} />,
       title: 'Safe & Private',
       description: 'Your conversations are encrypted and private. We prioritize confidentiality and safety.',
-      iconClassName: 'bg-green-50 text-green-600',
+      iconClassName: 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400',
     },
     {
       icon: <Brain size={24} />,
       title: 'Personalized Support',
       description: 'Get information on support resources and nearby centers that match your needs.',
-      iconClassName: 'bg-purple-50 text-purple-600',
+      iconClassName: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white text-stone-900">
+    <div className="min-h-screen bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100">
       {/* Public Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-stone-200">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-stone-900/80 backdrop-blur-md border-b border-stone-200 dark:border-stone-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-2">
               <Heart className="text-teal-600" size={28} />
-              <span className="text-xl font-bold text-stone-900">MediCare</span>
+              <span className="text-xl font-bold text-stone-900 dark:text-stone-100">MediCare</span>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="ghost" onClick={onLogin}>
@@ -55,7 +55,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-8 md:pt-24 md:pb-12 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-50 via-stone-50 to-white opacity-70"></div>
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-teal-50 via-stone-50 to-white dark:from-teal-950/30 dark:via-stone-900 dark:to-stone-900 opacity-70"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -65,7 +65,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
               transition={{ duration: 0.8, ease: "easeOut" }}
               className="max-w-2xl"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-sm font-medium mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 text-sm font-medium mb-4">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-500"></span>
@@ -73,21 +73,21 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
                 AI-Powered Support 24/7
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-stone-900 mb-4 leading-tight">
+              <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-stone-900 dark:text-stone-100 mb-4 leading-tight">
                 Medi Care
               </h1>
 
-              <p className="text-lg md:text-xl text-stone-600 mb-5 leading-relaxed max-w-lg">
+              <p className="text-lg md:text-xl text-stone-600 dark:text-stone-300 mb-5 leading-relaxed max-w-lg">
                 Experience support guided by advanced AI.
               </p>
 
          
 
-              <div className="mt-4 flex items-center gap-4 text-sm text-stone-500">
+              <div className="mt-4 flex items-center gap-4 text-sm text-stone-500 dark:text-stone-400">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-teal-200 to-blue-200 flex items-center justify-center">
-                      <span className="text-[10px] font-bold text-teal-700">U{i}</span>
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-stone-800 bg-gradient-to-br from-teal-200 to-blue-200 dark:from-teal-700 dark:to-blue-700 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-teal-700 dark:text-teal-200">U{i}</span>
                     </div>
                   ))}
                 </div>
@@ -100,7 +100,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative aspect-[4/3] md:aspect-[4/3] max-w-sm mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-teal-100/50">
+              <div className="relative aspect-[4/3] md:aspect-[4/3] max-w-sm mx-auto rounded-3xl overflow-hidden shadow-2xl shadow-teal-100/50 dark:shadow-teal-950/30">
                 <ImageWithFallback
                   src="https://images.unsplash.com/photo-1710250379777-eda5bbefd6b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYWxtJTIwcGVhY2VmdWwlMjBhYnN0cmFjdCUyMG5hdHVyZSUyMHNvZnQlMjBtaW5pbWFsJTIwd2hpdGUlMjBibHVlfGVufDF8fHx8MTc3MDM2NTQyOHww&ixlib=rb-4.1.0&q=80&w=1080"
                   alt="Calm abstract nature"
@@ -114,15 +114,15 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5, duration: 0.6 }}
-                className="absolute -bottom-6 -left-6 md:bottom-8 md:-left-8 bg-white p-4 rounded-2xl shadow-xl shadow-stone-200/50 max-w-[200px]"
+                className="absolute -bottom-6 -left-6 md:bottom-8 md:-left-8 bg-white dark:bg-stone-800 p-4 rounded-2xl shadow-xl shadow-stone-200/50 dark:shadow-stone-950/30 max-w-[200px]"
               >
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center text-green-600 dark:text-green-400">
                     <Sparkles size={14} />
                   </div>
-                  <span className="text-sm font-semibold text-stone-800">Daily Check-in</span>
+                  <span className="text-sm font-semibold text-stone-800 dark:text-stone-100">Daily Check-in</span>
                 </div>
-                <p className="text-xs text-stone-500">"I'm feeling much more balanced today thanks to the breathing exercise."</p>
+                <p className="text-xs text-stone-500 dark:text-stone-400">"I'm feeling much more balanced today thanks to the breathing exercise."</p>
               </motion.div>
             </motion.div>
           </div>
@@ -130,7 +130,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
       </section>
 
       {/* Features Section */}
-      <section className="py-8 bg-white">
+      <section className="py-8 bg-white dark:bg-stone-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -139,10 +139,10 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
             transition={{ duration: 0.6 }}
             className="text-center mb-6"
           >
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 dark:text-stone-100 mb-4">
               Everything you need for mental wellness
             </h2>
-            <p className="text-lg text-stone-600 max-w-2xl mx-auto">
+            <p className="text-lg text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
               A comprehensive platform designed to support your emotional well-being every step of the way.
             </p>
           </motion.div>
@@ -155,13 +155,13 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="bg-stone-50 rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                className="bg-stone-50 dark:bg-stone-800 rounded-2xl p-6 hover:shadow-lg dark:hover:shadow-stone-950/40 transition-shadow"
               >
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${feature.iconClassName}`}>
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold text-stone-900 mb-2">{feature.title}</h3>
-                <p className="text-stone-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-stone-900 dark:text-stone-100 mb-2">{feature.title}</h3>
+                <p className="text-stone-600 dark:text-stone-300">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -169,13 +169,13 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
       </section>
 
       {/* Footer */}
-      <footer className="bg-stone-50 text-stone-500 py-8 border-t border-stone-200">
+      <footer className="bg-stone-50 dark:bg-stone-900 text-stone-500 dark:text-stone-400 py-8 border-t border-stone-200 dark:border-stone-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-6">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Heart className="text-teal-600" size={24} />
-                <span className="text-lg font-bold text-stone-900">MediCare</span>
+                <span className="text-lg font-bold text-stone-900 dark:text-stone-100">MediCare</span>
               </div>
               <p className="text-sm">
                 Your trusted companion for mental wellness and emotional support.
@@ -187,7 +187,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
             </div>
 
           </div>
-          <div className="border-t border-stone-200 pt-6 text-sm text-center">
+          <div className="border-t border-stone-200 dark:border-stone-700 pt-6 text-sm text-center">
             <p>© {new Date().getFullYear()} MediCare. All rights reserved.</p>
             <p className="mt-2 text-xs">
               If you're experiencing a mental health emergency, please call your local emergency services or crisis hotline immediately.
