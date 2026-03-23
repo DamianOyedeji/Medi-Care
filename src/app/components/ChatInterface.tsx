@@ -688,14 +688,14 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
       <div className="flex-1 overflow-y-auto pt-20 pb-40 px-4 sm:px-0">
         <div className="max-w-3xl mx-auto space-y-8 sm:space-y-10">
           {loading ? (
-            <div className="text-center py-12 text-stone-400">Loading...</div>
+            <div className="text-center py-12 text-stone-400 dark:text-stone-500">Loading...</div>
           ) : error && messages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-rose-500 mb-4">{error}</p>
-              <p className="text-stone-500 text-sm">Please log in and try again.</p>
+              <p className="text-rose-500 dark:text-rose-400 mb-4">{error}</p>
+              <p className="text-stone-500 dark:text-stone-400 text-sm">Please log in and try again.</p>
             </div>
           ) : messages.length === 0 ? (
-            <div className="text-center py-12 text-stone-500">
+            <div className="text-center py-12 text-stone-500 dark:text-stone-400">
               <p className="font-medium">Start a conversation</p>
               <p className="text-sm mt-1">Share what's on your mind. I'm here to listen.</p>
             </div>
@@ -709,21 +709,21 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
                 className={cn('group flex w-full', message.role === 'user' ? 'justify-end' : 'justify-start')}
               >
                 <div className={cn('flex gap-4 max-w-[90%] sm:max-w-[85%] relative', message.role === 'user' ? 'flex-row-reverse' : 'flex-row')}>
-                  <div className={cn('w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1', message.role === 'assistant' ? 'bg-teal-50 text-teal-600' : 'bg-stone-100 text-stone-500')}>
+                  <div className={cn('w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1', message.role === 'assistant' ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400')}>
                     {message.role === 'assistant' ? <Sparkles size={14} /> : <div className="w-2 h-2 rounded-full bg-stone-400" />}
                   </div>
                   <div className={cn('flex-1 min-w-0', message.role === 'user' ? 'text-right' : 'text-left')}>
                     {editingMessageId === message.id ? (
-                      <div className="bg-stone-50 p-3 rounded-2xl border border-teal-200 ring-1 ring-teal-100 shadow-sm w-full">
+                      <div className="bg-stone-50 dark:bg-stone-800 p-3 rounded-2xl border border-teal-200 dark:border-teal-700 ring-1 ring-teal-100 dark:ring-teal-800 shadow-sm w-full">
                         <textarea
                           ref={editInputRef}
                           value={editValue}
                           onChange={(e) => setEditValue(e.target.value)}
-                          className="w-full bg-transparent border-none focus:ring-0 p-0 text-[15px] sm:text-base leading-relaxed text-stone-800 resize-none font-medium"
+                          className="w-full bg-transparent border-none focus:ring-0 p-0 text-[15px] sm:text-base leading-relaxed text-stone-800 dark:text-stone-100 resize-none font-medium"
                           rows={1}
                         />
                         <div className="flex justify-end gap-2 mt-2">
-                          <button onClick={cancelEditing} className="p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-200/50 rounded-full transition-colors">
+                          <button onClick={cancelEditing} className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200/50 dark:hover:bg-stone-600/50 rounded-full transition-colors">
                             <X size={14} />
                           </button>
                           <button onClick={() => saveEdit(message.id)} className="p-1.5 bg-teal-500 text-white rounded-full hover:bg-teal-600 transition-colors shadow-sm">
@@ -733,12 +733,12 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
                       </div>
                     ) : (
                       <div className="relative group/message">
-                        <div className={cn('text-[15px] sm:text-base leading-relaxed whitespace-pre-wrap', message.role === 'user' ? 'text-stone-700 font-medium' : 'text-stone-600 font-normal')}>
+                        <div className={cn('text-[15px] sm:text-base leading-relaxed whitespace-pre-wrap', message.role === 'user' ? 'text-stone-700 dark:text-stone-200 font-medium' : 'text-stone-600 dark:text-stone-300 font-normal')}>
                           {message.content.includes('[FILE:') ? renderMessageContent(message.content) : message.content}
                         </div>
 
                         {message.role === 'user' && (
-                          <button onClick={() => startEditing(message)} className="absolute top-0 -left-8 p-1.5 text-stone-300 hover:text-stone-500 opacity-0 group-hover/message:opacity-100 transition-opacity" title="Edit">
+                          <button onClick={() => startEditing(message)} className="absolute top-0 -left-8 p-1.5 text-stone-300 dark:text-stone-600 hover:text-stone-500 dark:hover:text-stone-400 opacity-0 group-hover/message:opacity-100 transition-opacity" title="Edit">
                             <Pencil size={12} />
                           </button>
                         )}
@@ -752,13 +752,13 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
 
           {isTyping && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-4 max-w-3xl mx-auto w-full px-4 sm:px-0">
-              <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0 mt-1">
+              <div className="w-8 h-8 rounded-full bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 flex items-center justify-center shrink-0 mt-1">
                 <Sparkles size={14} />
               </div>
               <div className="flex items-center gap-1.5 mt-2.5">
-                <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-                <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-                <span className="w-1.5 h-1.5 bg-stone-300 rounded-full animate-bounce"></span>
+                <span className="w-1.5 h-1.5 bg-stone-300 dark:bg-stone-600 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                <span className="w-1.5 h-1.5 bg-stone-300 dark:bg-stone-600 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                <span className="w-1.5 h-1.5 bg-stone-300 dark:bg-stone-600 rounded-full animate-bounce"></span>
               </div>
             </motion.div>
           )}
@@ -766,7 +766,7 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-10 pb-6 px-4">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent dark:from-stone-950 dark:via-stone-950 dark:to-transparent pt-10 pb-6 px-4">
         <div className="max-w-3xl mx-auto relative">
           {/* Hidden file input */}
           <input
@@ -776,7 +776,7 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
             onChange={handleFileSelect}
             className="hidden"
           />
-          <div className="relative bg-stone-50 hover:bg-stone-100 transition-colors rounded-3xl border border-stone-200/60 shadow-sm focus-within:shadow-md focus-within:border-stone-300 focus-within:ring-1 focus-within:ring-stone-200">
+          <div className="relative bg-stone-50 hover:bg-stone-100 dark:bg-stone-800 dark:hover:bg-stone-700 transition-colors rounded-3xl border border-stone-200/60 dark:border-stone-600 shadow-sm focus-within:shadow-md focus-within:border-stone-300 dark:focus-within:border-stone-500 focus-within:ring-1 focus-within:ring-stone-200 dark:focus-within:ring-stone-600">
             {/* Attachment preview strip */}
             <AnimatePresence>
               {attachedFile && (
@@ -792,20 +792,20 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
                       <img
                         src={attachedFile.dataUrl}
                         alt={attachedFile.name}
-                        className="w-14 h-14 rounded-xl object-cover border border-stone-200 shadow-sm"
+                        className="w-14 h-14 rounded-xl object-cover border border-stone-200 dark:border-stone-600 shadow-sm"
                       />
                     ) : (
-                      <div className="w-14 h-14 rounded-xl bg-violet-50 border border-violet-200 flex items-center justify-center">
+                      <div className="w-14 h-14 rounded-xl bg-violet-50 dark:bg-violet-900/30 border border-violet-200 dark:border-violet-700 flex items-center justify-center">
                         <FileText size={22} className="text-violet-500" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-stone-700 truncate">{attachedFile.name}</p>
-                      <p className="text-[11px] text-stone-400">{formatFileSize(attachedFile.size)}</p>
+                      <p className="text-sm font-medium text-stone-700 dark:text-stone-200 truncate">{attachedFile.name}</p>
+                      <p className="text-[11px] text-stone-400 dark:text-stone-500">{formatFileSize(attachedFile.size)}</p>
                     </div>
                     <button
                       onClick={removeAttachment}
-                      className="p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-200/50 rounded-full transition-colors shrink-0"
+                      className="p-1.5 text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200/50 dark:hover:bg-stone-600/50 rounded-full transition-colors shrink-0"
                       title="Remove attachment"
                     >
                       <X size={16} />
@@ -818,8 +818,8 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className={cn(
-                'absolute left-2 bottom-2 p-2 rounded-full hover:bg-stone-200/50 transition-colors z-10',
-                attachedFile ? 'text-teal-600' : 'text-stone-400 hover:text-stone-600'
+                'absolute left-2 bottom-2 p-2 rounded-full hover:bg-stone-200/50 dark:hover:bg-stone-600/50 transition-colors z-10',
+                attachedFile ? 'text-teal-600 dark:text-teal-400' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
               )}
               title="Attach files"
             >
@@ -832,7 +832,7 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
               onKeyDown={handleKeyDown}
               placeholder="Type whatever is on your mind..."
               rows={1}
-              className="w-full pl-12 pr-14 py-4 bg-transparent border-none focus:ring-0 resize-none max-h-[200px] text-stone-800 placeholder:text-stone-400 text-base"
+              className="w-full pl-12 pr-14 py-4 bg-transparent border-none focus:ring-0 resize-none max-h-[200px] text-stone-800 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-500 text-base"
               style={{ minHeight: '56px' }}
             />
             <div className="absolute right-2 bottom-2 flex items-center gap-1">
@@ -843,8 +843,8 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
                   className={cn(
                     'p-2 rounded-full transition-colors',
                     isListening
-                      ? 'text-teal-600 bg-teal-50 animate-pulse'
-                      : 'text-stone-400 hover:text-stone-600 hover:bg-stone-200/50'
+                      ? 'text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 animate-pulse'
+                      : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200/50 dark:hover:bg-stone-600/50'
                   )}
                   title={isListening ? 'Stop listening' : 'Use voice'}
                 >
@@ -853,13 +853,13 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
               )}
 
               {(inputValue.trim() || attachedFile) && (
-                <button onClick={() => handleSendMessage()} className="p-2 bg-stone-800 text-white rounded-full hover:bg-stone-700 transition-all shadow-sm" title="Send">
+                <button onClick={() => handleSendMessage()} className="p-2 bg-stone-800 dark:bg-teal-600 text-white rounded-full hover:bg-stone-700 dark:hover:bg-teal-500 transition-all shadow-sm" title="Send">
                   <Send size={16} />
                 </button>
               )}
             </div>
           </div>
-          <p className="text-center text-[10px] text-stone-300 mt-3">Medi-Care AI can make mistakes. Consider checking important information.</p>
+          <p className="text-center text-[10px] text-stone-300 dark:text-stone-600 mt-3">Medi-Care AI can make mistakes. Consider checking important information.</p>
         </div>
       </div>
 
