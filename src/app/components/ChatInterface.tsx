@@ -513,8 +513,9 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
     <div className="flex flex-col h-full bg-stone-50 dark:bg-stone-950 md:bg-white md:dark:bg-stone-900 relative">
       <header className="absolute top-0 left-0 right-0 z-10 bg-white/90 dark:bg-stone-900/90 backdrop-blur-sm border-b border-stone-50 dark:border-stone-800 py-3 px-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 -ml-2 rounded-full text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors" title="Back">
-            <ArrowLeft size={20} />
+          <button onClick={onBack} className="flex items-center gap-1.5 text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 text-sm font-medium transition-colors py-1 px-1" title="Back">
+            <ArrowLeft size={18} />
+            <span className="hidden sm:inline">Back</span>
           </button>
           <div>
             <h1 className="text-sm font-semibold text-stone-800 dark:text-stone-100 tracking-tight flex items-center gap-2">

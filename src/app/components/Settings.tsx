@@ -17,17 +17,16 @@ export function Settings({ onBack, onViewSupport }: SettingsProps) {
         <div className="min-h-screen bg-stone-50 dark:bg-stone-900 py-8 px-4 sm:px-6 transition-colors">
             <div className="max-w-xl mx-auto space-y-8">
                 {/* Header */}
-                <header className="relative text-center mb-8">
-                    <div className="absolute left-0 top-1">
-                        <button
-                            onClick={onBack}
-                            className="p-2 -ml-2 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                            title="Back"
-                        >
-                            <ArrowLeft size={24} />
-                        </button>
-                    </div>
-                    <div className="pt-2">
+                <header className="mb-8">
+                    <button
+                        onClick={onBack}
+                        className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200 text-sm font-medium mb-4 transition-colors py-1"
+                        title="Back"
+                    >
+                        <ArrowLeft size={18} />
+                        Back
+                    </button>
+                    <div className="text-center">
                         <h1 className="text-3xl font-bold text-stone-800 dark:text-stone-100 mb-2 font-serif tracking-tight">Settings & Privacy</h1>
                         <p className="text-stone-500 dark:text-stone-400 font-medium">Manage your data and preferences.</p>
                     </div>

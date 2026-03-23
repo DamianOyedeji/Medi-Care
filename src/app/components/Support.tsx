@@ -355,8 +355,9 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 font-sans">
       <header className="bg-white/80 backdrop-blur-md border-b border-stone-100 sticky top-0 z-10 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <button onClick={onBack} className="p-2 -ml-2 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors">
-          <ArrowLeft size={24} />
+        <button onClick={onBack} className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 text-sm font-medium transition-colors py-1">
+          <ArrowLeft size={18} />
+          Back
         </button>
         <span className="font-semibold text-stone-800">Support Resources</span>
         <button

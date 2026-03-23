@@ -185,14 +185,7 @@ export function PublicLandingPage({ onLogin, onSignUp }: PublicLandingPageProps)
             <div>
 
             </div>
-            <div>
-              <h4 className="text-stone-900 font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-teal-600 transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-teal-600 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-teal-600 transition-colors">Terms</a></li>
-              </ul>
-            </div>
+
           </div>
           <div className="border-t border-stone-200 pt-6 text-sm text-center">
             <p>© {new Date().getFullYear()} MediCare. All rights reserved.</p>

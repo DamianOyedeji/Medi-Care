@@ -66,16 +66,15 @@ export function ConversationHistory({ onBack, onSelectSession }: ConversationHis
   return (
     <div className="min-h-screen bg-stone-50 py-8 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto">
-        <header className="mb-10 relative">
-          <div className="absolute left-0 top-1">
-            <button
-              onClick={onBack}
-              className="p-2 -ml-2 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
-              title="Back to Dashboard"
-            >
-              <ArrowLeft size={24} />
-            </button>
-          </div>
+        <header className="mb-10">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 text-sm font-medium mb-4 transition-colors py-1"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft size={18} />
+            Back
+          </button>
           <div className="text-center">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-teal-50 text-teal-600 mb-4">
               <BookHeart size={24} />

@@ -28,15 +28,6 @@ export function Footer() {
             </ul>
           </div>
           
-          <div>
-            <h4 className="font-semibold text-stone-900 mb-4">Company</h4>
-            <ul className="space-y-3 text-sm text-stone-600">
-              <li><a href="#" className="hover:text-teal-600 transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition-colors">Contact</a></li>
-            </ul>
-          </div>
         </div>
         
         <div className="pt-8 border-t border-stone-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-stone-500">

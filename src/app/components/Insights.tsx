@@ -97,17 +97,16 @@ export function Insights({ onBack, onContinueChat }: InsightsProps) {
   return (
     <div className="min-h-screen bg-stone-50 py-8 px-4 sm:px-6">
       <div className="max-w-2xl mx-auto space-y-8">
-        <header className="relative mb-8 text-center">
-          <div className="absolute left-0 top-1">
-            <button
-              onClick={onBack}
-              className="p-2 -ml-2 rounded-full text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
-              title="Back to Dashboard"
-            >
-              <ArrowLeft size={24} />
-            </button>
-          </div>
-          <div className="pt-2">
+        <header className="mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1.5 text-stone-500 hover:text-stone-700 text-sm font-medium mb-4 transition-colors py-1"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft size={18} />
+            Back
+          </button>
+          <div className="text-center">
             <h1 className="text-3xl font-bold text-stone-800 mb-2 font-serif tracking-tight">Your Insights</h1>
             <p className="text-stone-500 font-medium">A gentle view of how you've been feeling over time.</p>
           </div>
