@@ -155,6 +155,7 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchedLocationName, setSearchedLocationName] = useState<string | null>(null);
+  const [detectedViaGPS, setDetectedViaGPS] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Set<FilterCategory>>(new Set(['psychiatric', 'wellness', 'hospital', 'clinic']));
   const [favorites, setFavorites] = useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem('mh_fav_facilities') || '[]')); }
@@ -164,6 +165,7 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
   const [flyTrigger, setFlyTrigger] = useState(0);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const markerRefs = useRef<(L.Marker | null)[]>([]);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchQuote() {
@@ -206,12 +208,41 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
     fetchInitiatives();
   }, []);
 
+  // Reverse geocode coordinates to get a human-readable location name
+  const reverseGeocode = async (lat: number, lon: number): Promise<string | null> => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10`,
+        { headers: { 'User-Agent': 'Medi-Care/1.0' } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      // Build a short, readable name: city/town + state + country
+      const addr = data.address || {};
+      const parts = [
+        addr.city || addr.town || addr.village || addr.suburb || addr.county || '',
+        addr.state || '',
+        addr.country || '',
+      ].filter(Boolean);
+      return parts.length > 0 ? parts.join(', ') : data.display_name || null;
+    } catch {
+      return null;
+    }
+  };
+
+  const focusSearchBox = () => {
+    if (searchInputRef.current) {
+      searchInputRef.current.focus();
+      searchInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
   const handleFindNearby = async () => {
     setLoadingNearby(true);
     setError(null);
     try {
       if (!navigator.geolocation) {
-        setError('Geolocation is not supported by your browser.');
+        setError('Geolocation is not supported by your browser. Please use the search box to find support near your city.');
         setLoadingNearby(false);
         return;
       }
@@ -220,7 +251,17 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
           try {
             const { latitude, longitude } = position.coords;
             setUserLocation([latitude, longitude]);
-            const data = await api.get<{ resources: Resource[] }>(`/api/support/nearby?latitude=${latitude}&longitude=${longitude}`);
+
+            // Reverse geocode and fetch resources in parallel
+            const [locationName, data] = await Promise.all([
+              reverseGeocode(latitude, longitude),
+              api.get<{ resources: Resource[] }>(`/api/support/nearby?latitude=${latitude}&longitude=${longitude}`),
+            ]);
+
+            // Show the detected location so the user can verify
+            setSearchedLocationName(locationName || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+            setDetectedViaGPS(true);
+
             const resources = (data as { resources: Resource[] }).resources || [];
             const mapped = resources.map((r) => ({
               ...r,
@@ -251,13 +292,13 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
           }
         },
         () => {
-          setError('Location access denied. Please enable location to find nearby support.');
+          setError('Location access denied. Please use the search box above to find support near your city.');
           setLoadingNearby(false);
         },
         {
-          enableHighAccuracy: false,
-          timeout: 10000,
-          maximumAge: 300000, // Accept cached position up to 5 minutes old
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 60000, // Accept cached position up to 1 minute old
         }
       );
     } catch {
@@ -433,6 +474,7 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
               setLoadingNearby(true);
               setError(null);
               setSearchedLocationName(null);
+              setDetectedViaGPS(false);
               api.get<{ location: { latitude: number; longitude: number; displayName: string }; resources: Resource[] }>(
                 `/api/support/search?query=${encodeURIComponent(searchQuery.trim())}`
               )
@@ -462,6 +504,7 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
             <div className="relative flex-1">
               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" />
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Search a city or area (e.g. Ikeja, Lagos)"
                 value={searchQuery}
@@ -486,14 +529,28 @@ export function Support({ onBack, onReturnToChat, onViewNotifications }: Support
           </div>
 
           {/* Find Near Me Button */}
-          <Button variant="primary" className="w-full justify-center py-4 text-base" onClick={() => { setSearchedLocationName(null); handleFindNearby(); }} disabled={loadingNearby}>
+          <Button variant="primary" className="w-full justify-center py-4 text-base" onClick={() => handleFindNearby()} disabled={loadingNearby}>
             <Navigation size={18} className="mr-2" />
             {loadingNearby ? 'Finding nearby support...' : showMap ? 'Refresh Nearby Results' : 'Find Support Near Me'}
           </Button>
 
-          {/* Searched location info */}
+          {/* Detected / searched location info */}
           {searchedLocationName && (
-            <p className="text-xs text-stone-400 dark:text-stone-500 text-center">Showing results near: <span className="font-medium text-stone-600 dark:text-stone-300">{searchedLocationName}</span></p>
+            <div className="text-center space-y-1">
+              <p className="text-xs text-stone-400 dark:text-stone-500">
+                {detectedViaGPS ? 'Detected location: ' : 'Showing results near: '}
+                <span className="font-medium text-stone-600 dark:text-stone-300">{searchedLocationName}</span>
+              </p>
+              {detectedViaGPS && (
+                <button
+                  type="button"
+                  onClick={focusSearchBox}
+                  className="text-xs font-semibold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 underline underline-offset-2 transition-colors"
+                >
+                  Wrong location? Search your city instead →
+                </button>
+              )}
+            </div>
           )}
         </motion.div>
 

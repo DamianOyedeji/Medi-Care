@@ -52,7 +52,7 @@ function App() {
     switch (currentView) {
       case 'public':
         return (
-          <motion.div key="public" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="public" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <PublicLandingPage
               onLogin={() => navigate('login')}
               onSignUp={() => navigate('register')}
@@ -61,7 +61,7 @@ function App() {
         );
       case 'login':
         return (
-          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="login" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Login
               onLogin={() => navigate('landing')}
               onSignUp={() => navigate('register')}
@@ -72,25 +72,25 @@ function App() {
         );
       case 'register':
         return (
-          <motion.div key="register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="register" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Register onRegister={() => navigate('landing')} onBackToLogin={() => navigate('login')} onBack={() => navigate('public')} />
           </motion.div>
         );
       case 'forgot-password':
         return (
-          <motion.div key="forgot-password" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="forgot-password" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <ForgotPassword onBackToLogin={() => navigate('login')} />
           </motion.div>
         );
       case 'reset-password':
         return (
-          <motion.div key="reset-password" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="reset-password" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <ResetPassword onSuccess={() => navigate('login')} />
           </motion.div>
         );
       case 'chat':
         return (
-          <motion.div key="chat" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} transition={{ duration: 0.3 }} className="h-screen overflow-hidden bg-stone-50">
+          <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }} className="h-screen overflow-hidden bg-stone-50">
             <ChatInterface
               conversationId={selectedConversationId}
               onBack={() => { setSelectedConversationId(null); navigate('landing'); }}
@@ -101,7 +101,7 @@ function App() {
         );
       case 'history':
         return (
-          <motion.div key="history" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
+          <motion.div key="history" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <ConversationHistory
               onBack={() => navigate('landing')}
               onSelectSession={(id) => { setSelectedConversationId(id); navigate('chat'); }}
@@ -110,7 +110,7 @@ function App() {
         );
       case 'insights':
         return (
-          <motion.div key="insights" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.05 }} transition={{ duration: 0.3 }}>
+          <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Insights
               onBack={() => navigate('landing')}
               onContinueChat={() => { setSelectedConversationId(null); navigate('chat'); }}
@@ -119,13 +119,13 @@ function App() {
         );
       case 'settings':
         return (
-          <motion.div key="settings" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+          <motion.div key="settings" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Settings onBack={() => navigate('landing')} onViewSupport={() => navigate('support')} />
           </motion.div>
         );
       case 'support':
         return (
-          <motion.div key="support" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+          <motion.div key="support" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Support
               onBack={() => navigate('landing')}
               onReturnToChat={() => { setSelectedConversationId(null); navigate('chat'); }}
@@ -135,14 +135,14 @@ function App() {
         );
       case 'notifications':
         return (
-          <motion.div key="notifications" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.3 }}>
+          <motion.div key="notifications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Notifications onBack={() => navigate(previousView === 'notifications' ? 'landing' : previousView)} />
           </motion.div>
         );
       case 'landing':
       default:
         return (
-          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+          <motion.div key="landing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.08 }}>
             <Navbar
               onStartChat={() => { setSelectedConversationId(null); navigate('chat'); }}
               onViewHistory={() => navigate('history')}

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Sparkles, Lock, Mail, Eye, EyeOff, User, ArrowLeft } from 'lucide-react';
 import { Button } from '../Button';
 import { useAuth } from '../../../contexts/AuthContext';
+import { supabase } from '../../../lib/supabase';
 import { api } from '../../../lib/api';
 
 interface RegisterProps {
@@ -28,11 +29,38 @@ export function Register({ onRegister, onBackToLogin, onBack }: RegisterProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const data = await api.post<{ user: { id: string; email: string; fullName?: string }; session?: { access_token: string } }>(
+      // Fast path: register directly with Supabase (1 hop instead of 2)
+      if (supabase) {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        });
+        if (signUpError) {
+          throw new Error(
+            signUpError.message.includes('already registered')
+              ? 'Email already registered'
+              : signUpError.message
+          );
+        }
+        if (data.session?.access_token) {
+          setUserFromSession(
+            { id: data.user!.id, email: data.user!.email!, fullName: data.user!.user_metadata?.full_name },
+            data.session.access_token
+          );
+          onRegister();
+        } else {
+          // Email confirmation required
+          onBackToLogin();
+        }
+        return;
+      }
+
+      // Fallback: go through backend if Supabase isn't configured on frontend
+      const res = await api.post<{ user: { id: string; email: string; fullName?: string }; session?: { access_token: string } }>(
         '/api/auth/signup',
         { email, password, fullName }
-      );
-      const res = data as { user: { id: string; email: string; fullName?: string }; session?: { access_token: string } };
+      ) as { user: { id: string; email: string; fullName?: string }; session?: { access_token: string } };
       if (res.session?.access_token) {
         setUserFromSession(
           { id: res.user.id, email: res.user.email, fullName: res.user.fullName },

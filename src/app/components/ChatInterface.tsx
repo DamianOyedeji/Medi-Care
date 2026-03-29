@@ -3,7 +3,8 @@ import { Send, ArrowLeft, ShieldAlert, PhoneCall, Mic, MicOff, Sparkles, Papercl
 import { useNotifications } from '../../contexts/NotificationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
-import { api } from '../../lib/api';
+import { api, getAccessToken } from '../../lib/api';
+import { API_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 
@@ -392,6 +393,9 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
       setIsSpeakingTTS(false);
     }
 
+    const userMsgId = Date.now().toString();
+    const aiMsgId = (Date.now() + 1).toString();
+
     try {
       let convId = activeConversationId;
       if (!convId) {
@@ -401,45 +405,85 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
       }
 
       const newUserMessage: Message = {
-        id: Date.now().toString(),
+        id: userMsgId,
         role: 'user',
         content: text,
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, newUserMessage]);
 
-      const res = await api.post<{ message: string; escalated?: boolean; supportResources?: unknown; emotionAnalysis?: EmotionAnalysis | null; providers?: Providers | null }>('/api/chat/message', {
-        conversationId: convId,
-        message: text,
-      });
-      const data = res as { message: string; escalated?: boolean; supportResources?: unknown; emotionAnalysis?: EmotionAnalysis | null; providers?: Providers | null };
+      // Add empty assistant message for streaming
+      setMessages((prev) => [...prev, { id: aiMsgId, role: 'assistant' as const, content: '', timestamp: new Date() }]);
 
-      if (data.escalated && (data.supportResources || data.message?.toLowerCase().includes('crisis'))) {
-        setShowSafetyBanner(true);
-        addNotification({
-          type: 'crisis',
-          title: 'We noticed you might be struggling',
-          body: 'You are not alone. Immediate support resources are available — tap the ❤️ icon to find help.',
-        });
+      const authToken = getAccessToken();
+      const response = await fetch(`${API_BASE}/api/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ conversationId: convId, message: text }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error((errorData as { message?: string })?.message || `Request failed: ${response.status}`);
       }
 
-      const newAiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: data.message,
-        timestamp: new Date(),
-        emotionAnalysis: data.emotionAnalysis,
-        providers: data.providers,
-      };
-      setMessages((prev) => [...prev, newAiMessage]);
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+      let aiContent = '';
+      let streamBuffer = '';
 
-      // Speak the response if TTS is enabled
-      if (ttsEnabled && data.message) {
-        speakText(data.message);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        streamBuffer += decoder.decode(value, { stream: true });
+        const eventLines = streamBuffer.split('\n');
+        streamBuffer = eventLines.pop() || '';
+
+        for (const line of eventLines) {
+          if (!line.startsWith('data: ')) continue;
+          let eventData: Record<string, unknown>;
+          try { eventData = JSON.parse(line.slice(6)); } catch { continue; }
+
+          if (eventData.error) {
+            throw new Error(eventData.error as string);
+          }
+          if (eventData.token) {
+            aiContent += eventData.token as string;
+            setMessages((prev) => prev.map((m) =>
+              m.id === aiMsgId ? { ...m, content: aiContent } : m
+            ));
+          }
+          if (eventData.done) {
+            setMessages((prev) => prev.map((m) =>
+              m.id === aiMsgId
+                ? { ...m, emotionAnalysis: eventData.emotionAnalysis as EmotionAnalysis | null, providers: eventData.providers as Providers | null }
+                : m
+            ));
+
+            if (eventData.escalated && ((eventData.supportResources) || aiContent.toLowerCase().includes('crisis'))) {
+              setShowSafetyBanner(true);
+              addNotification({
+                type: 'crisis',
+                title: 'We noticed you might be struggling',
+                body: 'You are not alone. Immediate support resources are available — tap the ❤️ icon to find help.',
+              });
+            }
+          }
+        }
+      }
+
+      // Speak the complete response if TTS is enabled
+      if (ttsEnabled && aiContent) {
+        speakText(aiContent);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      setMessages((prev) => prev.slice(0, -1));
+      // Remove the user message and any partial assistant message
+      setMessages((prev) => prev.filter((m) => m.id !== userMsgId && m.id !== aiMsgId));
     } finally {
       setIsTyping(false);
     }
@@ -482,14 +526,26 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          const data = await api.get<{ resources: NearbyFacility[] }>(
-            `/api/support/nearby?latitude=${latitude}&longitude=${longitude}`
-          );
+          // Use AbortController to timeout if API is slow (8s)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          const url = `${API_BASE}/api/support/nearby?latitude=${latitude}&longitude=${longitude}`;
+          const token = getAccessToken();
+          const res = await fetch(url, {
+            signal: controller.signal,
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          });
+          clearTimeout(timeoutId);
+          const data = await res.json();
           const resources = (data as { resources: NearbyFacility[] }).resources || [];
           setNearbyFacilities(resources);
           setFacilitiesFetched(true);
-        } catch {
-          setFacilitiesError('Could not find nearby facilities. Try again later.');
+        } catch (err) {
+          if ((err as Error).name === 'AbortError') {
+            setFacilitiesError('Search timed out. Try again.');
+          } else {
+            setFacilitiesError('Could not find nearby facilities. Try again later.');
+          }
         } finally {
           setLoadingFacilities(false);
         }
@@ -497,7 +553,8 @@ export function ChatInterface({ conversationId, onBack, onViewSupport, onViewNot
       () => {
         setFacilitiesError('Location access denied. Please enable location to find nearby support.');
         setLoadingFacilities(false);
-      }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
   };
 

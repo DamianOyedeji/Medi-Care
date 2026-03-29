@@ -27,20 +27,20 @@ function setCache(key, data) {
 }
 
 // ── Retry with exponential back-off for 429 / 5xx ────────────────────────────
-async function overpassRequest(query, retries = 3) {
+async function overpassRequest(query, retries = 2) {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const response = await axios.post(
         'https://overpass-api.de/api/interpreter',
         query,
-        { headers: { 'Content-Type': 'text/plain' }, timeout: 20000 }
+        { headers: { 'Content-Type': 'text/plain' }, timeout: 10000 }
       );
       return response;
     } catch (err) {
       const status = err.response?.status;
       const retryable = status === 429 || status === 503 || status === 504;
       if (retryable && attempt < retries) {
-        const wait = Math.min(2000 * 2 ** attempt, 16000); // 2 s → 4 s → 8 s
+        const wait = Math.min(1000 * 2 ** attempt, 4000); // 1s → 2s → 4s
         logger.warn('Overpass rate-limited / unavailable, retrying', { status, attempt: attempt + 1, waitMs: wait });
         await delay(wait);
       } else {
@@ -64,46 +64,49 @@ export async function findNearbyResources(latitude, longitude, radiusKm = 10) {
 
     logger.info('Searching nearby resources', { latitude, longitude, radiusKm, radiusMeters });
 
-    // Main query: all facility types
+    // Optimised single query — uses union with fewer selectors and shorter timeout
     const query = `
-      [out:json][timeout:30];
+      [out:json][timeout:12];
       (
-        node["amenity"="hospital"](around:${radiusMeters},${latitude},${longitude});
-        node["amenity"="clinic"](around:${radiusMeters},${latitude},${longitude});
-        node["amenity"="doctors"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="hospital"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="centre"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="clinic"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="psychotherapist"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="counselling"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="psychiatry"](around:${radiusMeters},${latitude},${longitude});
-        node["amenity"="social_facility"]["social_facility"="mental_health"](around:${radiusMeters},${latitude},${longitude});
-        way["amenity"="hospital"](around:${radiusMeters},${latitude},${longitude});
-        way["amenity"="clinic"](around:${radiusMeters},${latitude},${longitude});
-        way["amenity"="doctors"](around:${radiusMeters},${latitude},${longitude});
-        way["healthcare"="hospital"](around:${radiusMeters},${latitude},${longitude});
-        way["healthcare"="centre"](around:${radiusMeters},${latitude},${longitude});
-        way["healthcare"="clinic"](around:${radiusMeters},${latitude},${longitude});
-        relation["amenity"="hospital"](around:${radiusMeters},${latitude},${longitude});
-        relation["healthcare"="hospital"](around:${radiusMeters},${latitude},${longitude});
+        nwr["amenity"~"^(hospital|clinic|doctors)$"](around:${radiusMeters},${latitude},${longitude});
+        nwr["healthcare"~"^(hospital|centre|clinic|psychiatry|psychotherapist|counselling)$"](around:${radiusMeters},${latitude},${longitude});
+        nwr["amenity"="social_facility"]["social_facility"="mental_health"](around:${radiusMeters},${latitude},${longitude});
       );
       out center;
     `;
 
-    const response = await overpassRequest(query);
+    // Launch main query and psychiatric fallback in parallel
+    const [mainResponse, curatedPsych] = await Promise.all([
+      overpassRequest(query).catch(err => {
+        logger.error('Main Overpass query failed', { error: err.message });
+        return null;
+      }),
+      // Always prepare curated hospitals instantly (0ms) so we have a fallback
+      Promise.resolve(getKnownPsychiatricNearby(latitude, longitude))
+    ]);
 
-    const results = response.data.elements || [];
-    logger.info('Overpass API raw results', { totalElements: results.length });
+    let resources;
+    if (mainResponse) {
+      const results = mainResponse.data.elements || [];
+      logger.info('Overpass API raw results', { totalElements: results.length });
+      resources = parseAndCategorize(results, latitude, longitude);
+    } else {
+      resources = [];
+    }
 
-    let resources = parseAndCategorize(results, latitude, longitude);
-
-    // If no psychiatric hospital found, do a wider search specifically for psychiatric facilities
+    // If no psychiatric facility found, merge curated list (instant, no extra API call)
     const hasPsych = resources.some(r => r.category === 'psychiatric');
-    if (!hasPsych) {
-      logger.info('No psychiatric/wellness facilities in initial results, expanding search radius');
-      const expandedPsych = await findPsychiatricFacilities(latitude, longitude, radiusKm);
-      if (expandedPsych.length > 0) {
-        resources = [...expandedPsych, ...resources];
+    if (!hasPsych && curatedPsych.length > 0) {
+      resources = [...curatedPsych, ...resources];
+    }
+
+    // If we got very few results from main query AND it succeeded, do one expanded search
+    if (mainResponse && resources.length < 5) {
+      const expanded = await findPsychiatricFacilities(latitude, longitude, radiusKm);
+      if (expanded.length > 0) {
+        const existingNames = new Set(resources.map(r => r.name.toLowerCase()));
+        const newOnes = expanded.filter(r => !existingNames.has(r.name.toLowerCase()));
+        resources = [...newOnes, ...resources];
       }
     }
 
@@ -144,52 +147,35 @@ export async function findNearbyResources(latitude, longitude, radiusKm = 10) {
 
 /**
  * Wider search specifically for psychiatric/mental health facilities.
- * Tries 100km, then 200km if nothing found. Falls back to curated list.
+ * Single 100km radius attempt, then falls back to curated list.
  */
 async function findPsychiatricFacilities(latitude, longitude, initialRadiusKm) {
-  const expandRadii = [100, 200]; // km to try
+  const radiusKm = 100;
+  if (radiusKm <= initialRadiusKm) return getKnownPsychiatricNearby(latitude, longitude);
 
-  for (const radiusKm of expandRadii) {
-    if (radiusKm <= initialRadiusKm) continue;
-    const radiusMeters = radiusKm * 1000;
+  const radiusMeters = radiusKm * 1000;
+  logger.info('Expanding psychiatric search', { radiusKm });
 
-    // Wait 2s between Overpass requests to avoid rate limiting
-    await delay(2000);
+  const query = `
+    [out:json][timeout:10];
+    (
+      nwr["healthcare"~"^(psychiatry|psychotherapist|counselling)$"](around:${radiusMeters},${latitude},${longitude});
+      nwr["amenity"="social_facility"]["social_facility"="mental_health"](around:${radiusMeters},${latitude},${longitude});
+      nwr["amenity"="hospital"]["name"~"[Pp]sychiatr|[Mm]ental|[Nn]europsych"](around:${radiusMeters},${latitude},${longitude});
+    );
+    out center;
+  `;
 
-    logger.info('Expanding psychiatric search', { radiusKm });
+  try {
+    const response = await overpassRequest(query, 1);
+    const results = response.data.elements || [];
+    const facilities = parseAndCategorize(results, latitude, longitude)
+      .filter(r => r.category === 'psychiatric' || r.category === 'wellness');
 
-    const query = `
-      [out:json][timeout:30];
-      (
-        node["healthcare"="psychiatry"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="psychotherapist"](around:${radiusMeters},${latitude},${longitude});
-        node["healthcare"="counselling"](around:${radiusMeters},${latitude},${longitude});
-        node["amenity"="social_facility"]["social_facility"="mental_health"](around:${radiusMeters},${latitude},${longitude});
-        way["healthcare"="psychiatry"](around:${radiusMeters},${latitude},${longitude});
-        node["amenity"="hospital"]["name"~"[Pp]sychiatr|[Mm]ental|[Nn]europsych"](around:${radiusMeters},${latitude},${longitude});
-        way["amenity"="hospital"]["name"~"[Pp]sychiatr|[Mm]ental|[Nn]europsych"](around:${radiusMeters},${latitude},${longitude});
-        relation["amenity"="hospital"]["name"~"[Pp]sychiatr|[Mm]ental|[Nn]europsych"](around:${radiusMeters},${latitude},${longitude});
-      );
-      out center;
-    `;
-
-    try {
-      const response = await overpassRequest(query, 2);
-
-      const results = response.data.elements || [];
-      const facilities = parseAndCategorize(results, latitude, longitude)
-        .filter(r => r.category === 'psychiatric' || r.category === 'wellness');
-
-      logger.info('Expanded psychiatric search results', { radiusKm, found: facilities.length });
-
-      if (facilities.length > 0) {
-        return facilities.slice(0, 5);
-      }
-    } catch (error) {
-      logger.error('Expanded search error', { radiusKm, error: error.message });
-      // If rate-limited, skip further expansion and go to fallback
-      if (error.response?.status === 429) break;
-    }
+    logger.info('Expanded psychiatric search results', { radiusKm, found: facilities.length });
+    if (facilities.length > 0) return facilities.slice(0, 5);
+  } catch (error) {
+    logger.error('Expanded search error', { radiusKm, error: error.message });
   }
 
   // Last resort: return nearest known Nigerian psychiatric facilities
