@@ -3,8 +3,7 @@ import { Send, ArrowLeft, ShieldAlert, PhoneCall, Mic, MicOff, Sparkles, Papercl
 import { useNotifications } from '../../contexts/NotificationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../../lib/utils';
-import { api, getAccessToken } from '../../lib/api';
-import { API_BASE } from '../../lib/api';
+import { api, getAccessToken, API_BASE } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 
 
